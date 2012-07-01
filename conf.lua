@@ -4,6 +4,10 @@ game = {
     sounds = {}
 }
 
+function math.round(num)
+    return math.floor(num + 0.5)
+end
+
 function game.drawBox(x, y, w, h)
     love.graphics.rectangle('line', math.round(x) + 1 / game.scale,
                                     math.round(y),

@@ -1,4 +1,8 @@
-BoxManager = class()
+local DynamicBox = require('Dynamic', ...)
+local StaticBox = require('Static', ...)
+local MovingBox = require('Moving', ...)
+
+local BoxManager = class()
 
 function BoxManager:new()
     self.dynamics = {}
@@ -161,4 +165,6 @@ function BoxManager:draw(min, max)
         box:draw()
     end)
 end
+
+return BoxManager
 

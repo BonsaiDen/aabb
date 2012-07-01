@@ -1,4 +1,4 @@
-StaticBox = class()
+local StaticBox = class()
 StaticBox.id = 0
 
 function StaticBox:new(pos, size)
@@ -59,4 +59,6 @@ function StaticBox:draw()
     love.graphics.setColor(200, 0, 0)
     game.drawBox(self.pos.x, self.pos.y, self.size.x, self.size.y)
 end
+
+return StaticBox
 

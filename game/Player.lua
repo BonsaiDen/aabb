@@ -74,6 +74,6 @@ end
 function Player:draw()
     local frame = self.animation:getFrame()
     game.images.player:drawTile(frame, { x = math.round(self.pos.x - 3), y = math.round(self.pos.y - 7) }, self.direction == 1)
-    DynamicBox.draw(self)
+    Entity.draw(self)
 end
 

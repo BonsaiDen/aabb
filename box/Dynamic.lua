@@ -1,4 +1,5 @@
-DynamicBox = class(StaticBox)
+local StaticBox = require('Static', ...)
+local DynamicBox = class(StaticBox)
 
 function DynamicBox:new(pos, size)
 
@@ -339,4 +340,6 @@ function DynamicBox:sweep(other, otherVel)
     return true, outVel, hitNormal
 
 end
+
+return DynamicBox
 

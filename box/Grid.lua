@@ -1,4 +1,4 @@
-StaticBoxGrid = class()
+local StaticBoxGrid = class()
 function StaticBoxGrid:new(spacing)
 
     -- this should be bigger then the maximum square size of any dynamic object
@@ -51,3 +51,4 @@ function StaticBoxGrid:get(x, y)
     return self.buckets[self:hash(x, y)] or self.empty
 end
 
+return StaticBoxGrid

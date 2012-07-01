@@ -1,4 +1,5 @@
-MovingBox = class(StaticBox)
+local StaticBox = require('Static', ...)
+local MovingBox = class(StaticBox)
 
 function MovingBox:new(pos, size)
     StaticBox.new(self, pos, size)
@@ -29,4 +30,6 @@ function MovingBox:draw()
     game.drawLine(cx, cy, cx + vx / vl * 10, cy + vy / vl * 10, 2)
 
 end
+
+return MovingBox
 

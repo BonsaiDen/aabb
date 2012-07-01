@@ -1,7 +1,9 @@
-Entity = class(DynamicBox)
+box = require 'box'
+
+Entity = class(box.Dynamic)
 function Entity:new(pos, size)
 
-    DynamicBox.new(self, pos, size)
+    box.Dynamic.new(self, pos, size)
 
     self.gravity = 0 
     self.gravityAcceleration = 0
@@ -23,7 +25,7 @@ function Entity:jump(height, seconds)
     self.jumpForce = -force
 
     -- check for platform and correct jump force to include platform y velocity
-    if self.contactSurface.down and self.contactSurface.down:is_a(MovingBox) then
+    if self.contactSurface.down and self.contactSurface.down:is_a(box.Moving) then
         self.jumpForce = self.jumpForce + self.contactSurface.down.vel.y
     end
 
@@ -37,7 +39,7 @@ end
 
 function Entity:update(dt)
     
-    DynamicBox.update(self, dt)
+    box.Dynamic.update(self, dt)
 
     -- jump forces and gravity are handles differently
     -- this makes the whole system easier and more friendly to gameplay tweaking
@@ -45,6 +47,11 @@ function Entity:update(dt)
         self.jumpForce = self.jumpForce + self.jumpDecelaration
         self.vel.y = (self.movement.y * dt) + self.jumpForce
         self.gravity = self.jumpForce
+
+        if self.contactSurface.down and self.vel.y > 0 then
+            self.jumpForce = 0
+            self.gravity = 0
+        end
 
     else
         
@@ -61,7 +68,7 @@ function Entity:update(dt)
             self.gravity = 0
 
             -- check for platforms and make the entity move downwards with them
-            if self.contactSurface.down:is_a(MovingBox) then
+            if self.contactSurface.down:is_a(box.Moving) then
                 self.gravity = self.contactSurface.down.vel.y
             end
 
@@ -73,7 +80,7 @@ function Entity:update(dt)
 
     -- check for platform and x velocity to include platform x velocity
     self.vel.x = (self.movement.x * dt)
-    if self.contactSurface.down and self.contactSurface.down:is_a(MovingBox) then
+    if self.contactSurface.down and self.contactSurface.down:is_a(box.Moving) then
 
         local mx = self.contactSurface.down.vel.x
         if self.vel.x == 0 or (self.vel.x > 0 and mx > 0) or (self.vel.x < 0 and mx < 0) then
@@ -82,5 +89,9 @@ function Entity:update(dt)
         
     end
 
+end
+
+function Entity:draw()
+    box.Dynamic.draw(self)
 end
 
