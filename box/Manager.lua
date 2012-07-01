@@ -29,6 +29,15 @@ end
 
 function BoxManager:update(dt)
 
+    table.sort(self.dynamics, function(a, b)
+        if a.pos.y > b.pos.y then
+            return true
+
+        elseif b.pos.y < a.pos.y then
+            return false
+        end
+    end)
+
     for i=1, #self.dynamics do
         self.dynamics[i]:beforeUpdate(dt)
     end

@@ -47,10 +47,8 @@ function DynamicBox:setPosition(pos)
 end
 
 function DynamicBox:draw()
-    love.graphics.setColor(255, 255, 255)
-    love.graphics.rectangle('line', math.round(self.pos.x),
-                                    math.round(self.pos.y),
-                                    self.size.x, self.size.y)
+    love.graphics.setColor(255, 255, 0)
+    game.drawBox(self.pos.x, self.pos.y, self.size.x, self.size.y)
 end
 
 function DynamicBox:onCollision(other, vel, normal)
@@ -200,18 +198,22 @@ function DynamicBox:sweep(other, otherVel)
         end
 
         -- otherwise set the contact surface
-        if a.max.y == b.min.y then
-            self.contactSurface.down = b
+        if a.min.x < b.max.x and a.max.x > b.min.x then
+            if a.max.y == b.min.y then
+                self.contactSurface.down = b
 
-        elseif a.min.y == b.max.y then
-            self.contactSurface.up = b
+            elseif a.min.y == b.max.y then
+                self.contactSurface.up = b
+            end
         end
 
-        if a.max.x == b.min.x then
-            self.contactSurface.right = b
+        if a.min.y < b.max.y and a.max.y > b.min.y then
+            if a.max.x == b.min.x then
+                self.contactSurface.right = b
 
-        elseif a.min.x == b.max.x then
-            self.contactSurface.left = b
+            elseif a.min.x == b.max.x then
+                self.contactSurface.left = b
+            end
         end
 
     end

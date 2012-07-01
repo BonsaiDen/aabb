@@ -1,14 +1,25 @@
 require 'conf'
-require 'entity'
+require 'class'
+require 'box'
+require 'game/Player'
 
 function math.round(num)
     return math.floor(num + 0.5)
 end
 
-blu = Entity({ x = 20, y = 4}, { x = 16, y = 16})
-foo = Entity({ x = 20, y = 30}, { x = 20, y = 20})
-bar = Entity({ x = 20, y = 60}, { x = 20, y = 20})
-toz = Entity({ x = 20, y = 90}, { x = 20, y = 20})
+function math.sign(x)
+   if x < 0 then
+        return -1
+   elseif x > 0 then
+        return 1
+   else
+        return 0
+   end
+end
+
+
+
+game.player = Player({ x = 20, y = 0}, { x = 10, y = 9})
 
 
 -- Global Game State ----------------------------------------------------------
@@ -21,16 +32,30 @@ function love.load(arg)
     love.graphics.setLineStyle('rough')
     love.graphics.setLineWidth(1 / game.scale)
 
+    love.graphics.setBackgroundColor(128, 128, 128)
+
+    game.images.player = ImageSheet(love.graphics.newImage('game/player.png'), 8, 8)
+
     manager:add(StaticBox({ x = 0, y = 140 }, { x = 140, y = 50 }))
-    manager:add(StaticBox({ x = 146, y = 50 }, { x = 60, y = 200 }))
 
-    manager:add(blu)
-    manager:add(foo)
-    manager:add(bar)
-    manager:add(toz)
-    --manager:addEntity(mover)
+    manager:add(StaticBox({ x = 150, y = 160 }, { x = 100, y = 50 }))
 
+    manager:add(StaticBox({ x = 200, y = 50 }, { x = 60, y = 200 }))
 
+    manager:add(StaticBox({ x = 0, y = 20 }, { x = 30, y = 4 }))
+
+    manager:add(StaticBox({ x = 0, y = 100 }, { x = 30, y = 40 }))
+
+    manager:add(StaticBox({ x = 200, y = 0 }, { x = 50, y = 50 }))
+
+    manager:add(StaticBox({ x = 0, y = 280 }, { x = 320, y = 4 }))
+
+    manager:add(game.player)
+
+end
+
+function love.update(dt)
+    manager:update(dt)
 end
 
 function love.draw()
@@ -39,6 +64,4 @@ function love.draw()
     manager:draw({ x = 0, y = 0}, { x = 320 , y = 288})
 end
 
-function love.update(dt)
-    manager:update(dt)
-end
+

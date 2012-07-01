@@ -50,8 +50,6 @@ end
 
 function StaticBox:draw()
     love.graphics.setColor(200, 0, 0)
-    love.graphics.rectangle('line', math.floor(self.pos.x), 
-                                    math.floor(self.pos.y),
-                                    self.size.x , self.size.y )
+    game.drawBox(self.pos.x, self.pos.y, self.size.x, self.size.y)
 end
 

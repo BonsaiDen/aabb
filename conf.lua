@@ -1,6 +1,16 @@
 game = {
-    scale = 2
+    scale = 2,
+    images = {},
+    sounds = {}
 }
+
+function game.drawBox(x, y, w, h)
+    love.graphics.rectangle('line', math.round(x) + 1 / game.scale,
+                                    math.round(y),
+                                    w - 1 / game.scale,
+                                    h - 1 / game.scale)
+end
+
 
 function love.conf(t)
     t.title = 'AABB'
