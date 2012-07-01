@@ -4,12 +4,12 @@
 local StaticBox = class()
 StaticBox.id = 0
 
-function StaticBox:new(pos, size)
+function StaticBox:new(x, y, w, h)
     self.id = StaticBox.id
     StaticBox.id = StaticBox.id + 1
 
-    self.pos = pos or { x = 0, y = 0 }
-    self.size = size or { x = 16, y = 16}
+    self.pos = { x = x, y = y }
+    self.size = { x = w, y = h }
 
     self.vel = { x = 0, y = 0 }
     self.min = { x = 0, y = 0 }
@@ -44,9 +44,9 @@ function StaticBox:overlaps(other)
     end
 end
 
-function StaticBox:within(min, max)
-    return self.min.x < max.x and self.min.y < max.y
-            and self.max.x > min.x and self.max.y > min.y
+function StaticBox:within(x, y, mx, my)
+    return self.min.x < mx and self.min.y < my
+            and self.max.x > x and self.max.y > y
 end
 
 function StaticBox:contains(point)
@@ -55,8 +55,8 @@ function StaticBox:contains(point)
 end
 
 function StaticBox:draw()
-    love.graphics.setColor(200, 0, 0)
-    game.drawBox(self.pos.x, self.pos.y, self.size.x, self.size.y)
+    game.graphics.setColor(200, 0, 0)
+    game.graphics.rectangle(self.pos.x, self.pos.y, self.size.x, self.size.y)
 end
 -- End Static ------------------------------------------------------------------
 
@@ -78,7 +78,7 @@ end
 function StaticBoxGrid:add(box)
     table.insert(self.boxes, box)
 
-    self:eachIn(box.min, box.max, function(x, y, hash)
+    self:eachIn(box.min.x, box.min.y, box.max.x, box.max.y, function(x, y, hash)
     
         if not self.buckets[hash] then
             self.buckets[hash] = {}
@@ -89,12 +89,12 @@ function StaticBoxGrid:add(box)
     end)
 end
 
-function StaticBoxGrid:eachIn(min, max, callback)
-    local minx = math.floor(min.x / self.spacing) * self.spacing - self.spacing
-    local maxx = math.floor(max.x / self.spacing) * self.spacing + self.spacing
+function StaticBoxGrid:eachIn(x, y, mx, my, callback)
+    local minx = math.floor(x / self.spacing) * self.spacing - self.spacing
+    local maxx = math.floor(mx / self.spacing) * self.spacing + self.spacing
 
-    local miny = math.floor(min.y / self.spacing) * self.spacing - self.spacing
-    local maxy = math.floor(max.y / self.spacing) * self.spacing + self.spacing
+    local miny = math.floor(y / self.spacing) * self.spacing - self.spacing
+    local maxy = math.floor(my / self.spacing) * self.spacing + self.spacing
 
     for y=miny, maxy, self.spacing do
         for x=minx, maxx, self.spacing do
@@ -119,8 +119,8 @@ end
 -- Moving AABB Box ------------------------------------------------------------
 -- ----------------------------------------------------------------------------
 local MovingBox = class(StaticBox)
-function MovingBox:new(pos, size)
-    StaticBox.new(self, pos, size)
+function MovingBox:new(x, y, w, h)
+    StaticBox.new(self, x, y, w, h)
 end
 
 function MovingBox:update(dt)
@@ -140,11 +140,11 @@ function MovingBox:draw()
     local vy = self.vel.y
     local vl = math.sqrt(vx * vx + vy * vy)
 
-    love.graphics.setColor(0, 255, 0)
-    game.drawBox(x, y, sx, sy)
+    game.graphics.setColor(0, 255, 0)
+    game.graphics.rectangle(x, y, sx, sy)
 
-    love.graphics.setColor(0, 0, 255)
-    game.drawLine(cx, cy, cx + vx / vl * 10, cy + vy / vl * 10, 2)
+    game.graphics.setColor(0, 0, 255)
+    game.graphics.line(cx, cy, cx + vx / vl * 10, cy + vy / vl * 10, 2)
 end
 -- End Moving -----------------------------------------------------------------
 
@@ -154,8 +154,8 @@ end
 -- Dynamic AABB Box -----------------------------------------------------------
 -- ----------------------------------------------------------------------------
 local DynamicBox = class(StaticBox)
-function DynamicBox:new(pos, size)
-    StaticBox.new(self, pos, size)
+function DynamicBox:new(x, y, w, h)
+    StaticBox.new(self, x, y, w, h)
 
     -- TODO these should to be lists 
     self.contactSurface = {
@@ -195,9 +195,9 @@ function DynamicBox:updatePosition(dt)
     self.pos.y = self.pos.y + self.vel.y
 end
 
-function DynamicBox:setPosition(pos) 
-    self.pos.x = math.floor(pos.x + 0.5)
-    self.pos.y = math.floor(pos.y + 0.5)
+function DynamicBox:setPosition(x, y) 
+    self.pos.x = math.floor(x + 0.5)
+    self.pos.y = math.floor(y + 0.5)
     self.vel.x = 0
     self.vel.y = 0
     self:updateBounds()
@@ -214,27 +214,27 @@ function DynamicBox:draw()
     local vy = self.vel.y
     local vl = math.sqrt(vx * vx + vy * vy)
 
-    love.graphics.setColor(255, 255, 0)
-    game.drawBox(x, y, sx, sy)
+    game.graphics.setColor(255, 255, 0)
+    game.graphics.rectangle(x, y, sx, sy)
 
-    love.graphics.setColor(0, 0, 255)
-    game.drawLine(cx, cy, cx + vx / vl * 10, cy + vy / vl * 10, 2)
+    game.graphics.setColor(0, 0, 255)
+    game.graphics.line(cx, cy, cx + vx / vl * 10, cy + vy / vl * 10, 2)
 
-    love.graphics.setColor(0, 0, 255)
+    game.graphics.setColor(0, 0, 255)
     if self.contactSurface.down then
-        game.drawLine(x, y + sy, x + sx, y + sy, 2)
+        game.graphics.line(x, y + sy, x + sx, y + sy, 2)
     end
 
     if self.contactSurface.up then
-        game.drawLine(x, y, x + sx, y, 2)
+        game.graphics.line(x, y, x + sx, y, 2)
     end
 
     if self.contactSurface.left then
-        game.drawLine(x, y, x, y + sy, 2)
+        game.graphics.line(x, y, x, y + sy, 2)
     end
 
     if self.contactSurface.right then
-        game.drawLine(x + sx, y, x + sx, y  + sy, 2)
+        game.graphics.line(x + sx, y, x + sx, y  + sy, 2)
     end
 end
 
@@ -658,28 +658,28 @@ function BoxManager:collideBox(box, ignore)
     end
 end
 
-function BoxManager:eachIn(min, max, callback)
-    self.staticGrid:eachIn(min, max, function(x, y, hash, statics)
+function BoxManager:eachIn(x, y, mx, my, callback)
+    self.staticGrid:eachIn(x, y, mx, my, function(x, y, hash, statics)
         for e=1, #statics do
             callback(statics[e])
         end
     end)
 
     for i=1, #self.movings do
-        if self.movings[i]:within(min, max) then
+        if self.movings[i]:within(x, y, mx, my) then
             callback(self.movings[i])
         end
     end
 
     for i=1, #self.dynamics do
-        if self.dynamics[i]:within(min, max) then
+        if self.dynamics[i]:within(x, y, mx, my) then
             callback(self.dynamics[i])
         end
     end
 end
 
-function BoxManager:draw(min, max)
-    self:eachIn(min, max, function(box)
+function BoxManager:draw(x, y, mx, my)
+    self:eachIn(x, y, mx, my, function(box)
         box:draw()
     end)
 end

@@ -1,9 +1,9 @@
 box = require 'box'
 
 Entity = class(box.Dynamic)
-function Entity:new(pos, size)
+function Entity:new(x, y, w, h)
 
-    box.Dynamic.new(self, pos, size)
+    box.Dynamic.new(self, x, y, w, h)
 
     self.gravity = 0 
     self.gravityAcceleration = 0
@@ -44,7 +44,7 @@ function Entity:update(dt)
     -- jump forces and gravity are handles differently
     -- this makes the whole system easier and more friendly to gameplay tweaking
     if self.jumpForce < self.maxFallSpeed and self.jumpDecelaration ~= 0 then
-        self.jumpForce = self.jumpForce + self.jumpDecelaration
+        self.jumpForce = self.jumpForce + self.jumpDecelaration 
         self.vel.y = (self.movement.y * dt) + self.jumpForce
         self.gravity = self.jumpForce
 
