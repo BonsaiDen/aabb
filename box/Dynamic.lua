@@ -36,19 +36,58 @@ function DynamicBox:beforeUpdate(dt)
 end
 
 function DynamicBox:update(dt)
-    self.pos.x = self.pos.x + self.vel.x
-    self.pos.y = self.pos.y + self.vel.y
+    self:updatePosition(dt)
     self:updateBounds()
 end
 
+function DynamicBox:updatePosition(dt)
+    self.pos.x = self.pos.x + self.vel.x
+    self.pos.y = self.pos.y + self.vel.y
+end
+
 function DynamicBox:setPosition(pos) 
-    self.pos.x = pos.x
-    self.pos.y = pos.y
+    self.pos.x = math.round(pos.x)
+    self.pos.y = math.round(pos.y)
+    self.vel.x = 0
+    self.vel.y = 0
+    self:updateBounds()
 end
 
 function DynamicBox:draw()
+
+    local x = self.pos.x
+    local y = self.pos.y
+    local sx = self.size.x
+    local sy = self.size.y
+    local cx = x + sx / 2
+    local cy = y + sy / 2
+    local vx = self.vel.x
+    local vy = self.vel.y
+    local vl = math.sqrt(vx * vx + vy * vy)
+
     love.graphics.setColor(255, 255, 0)
-    game.drawBox(self.pos.x, self.pos.y, self.size.x, self.size.y)
+    game.drawBox(x, y, sx, sy)
+
+    love.graphics.setColor(0, 0, 255)
+    game.drawLine(cx, cy, cx + vx / vl * 10, cy + vy / vl * 10, 2)
+
+    love.graphics.setColor(0, 0, 255)
+    if self.contactSurface.down then
+        game.drawLine(x, y + sy, x + sx, y + sy, 2)
+    end
+
+    if self.contactSurface.up then
+        game.drawLine(x, y, x + sx, y, 2)
+    end
+
+    if self.contactSurface.left then
+        game.drawLine(x, y, x, y + sy, 2)
+    end
+
+    if self.contactSurface.right then
+        game.drawLine(x + sx, y, x + sx, y  + sy, 2)
+    end
+
 end
 
 function DynamicBox:onCollision(other, vel, normal)
@@ -98,6 +137,7 @@ function DynamicBox:sweep(other, otherVel)
     
     -- X axis overlap
     if v.x < 0 then
+        if not b.blocks.right then return false, nil, nil end
         if b.max.x < a.min.x then return false, nil, nil end
         if b.max.x > a.min.x then
             outTime = math.min((a.min.x - b.max.x) / v.x, outTime)
@@ -109,6 +149,7 @@ function DynamicBox:sweep(other, otherVel)
         end
 
     elseif v.x > 0 then
+        if not b.blocks.left then return false, nil, nil end
         if b.min.x > a.max.x then return false, nil, nil end
         if a.max.x > b.min.x then
             outTime = math.min((a.max.x - b.min.x) / v.x, outTime)
@@ -125,6 +166,7 @@ function DynamicBox:sweep(other, otherVel)
 
     -- Y axis overlap
     if v.y < 0 then
+        if not b.blocks.down then return false, nil, nil end
         if b.max.y < a.min.y then return false, nil, nil end
         if b.max.y > a.min.y then
             outTime = math.min((a.min.y - b.max.y) / v.y, outTime)
@@ -136,7 +178,7 @@ function DynamicBox:sweep(other, otherVel)
         end
 
     elseif v.y > 0 then
-        --if a.max.x < b.min.x or a.min.x > b.max.x then return false, nil, nil end
+        if not b.blocks.up then return false, nil, nil end
         if b.min.y > a.max.y then return false, nil, nil end
         if a.max.y > b.min.y then
             outTime = math.min((a.max.y - b.min.y) / v.y, outTime)
@@ -214,6 +256,53 @@ function DynamicBox:sweep(other, otherVel)
             elseif a.min.x == b.max.x then
                 self.contactSurface.left = b
             end
+        end
+
+        -- in case we're stuck make sure push us out
+        local pushVel = {
+            x = 0,
+            y = 0
+        }
+
+        -- Resolve boxes which are stuck
+        if not (self.max.x < other.min.x + 1 or self.min.x > other.max.x - 1) 
+            and not (self.max.y < other.min.y + 1 or self.min.y > other.max.y - 1) then 
+
+            -- compute centers
+            local acy = a.min.y + a.size.y / 2
+            local bcy = b.min.y + b.size.y / 2
+
+            if acy < bcy then
+                pushVel.y = b.min.y - a.max.y
+
+            else
+                pushVel.y = b.max.y - a.min.y
+            end
+
+            -- compute centers
+            local acx = a.min.x + a.size.x / 2
+            local bcx = b.min.x + b.size.x / 2
+
+            if acx < bcx then
+                pushVel.x = b.min.x - a.max.x
+
+            else
+                pushVel.x = b.max.x - a.min.x
+            end
+
+            -- now choose the minium / maximum of the push / out values
+            -- to resolve the stuck state in the "best" way
+            if math.abs(pushVel.y) < math.abs(pushVel.x) then
+                outVel.y = math.minmax(pushVel.y, outVel.y)
+
+            elseif math.abs(pushVel.x) > math.abs(pushVel.y) then
+                outVel.x = math.minmax(pushVel.x, outVel.x)
+
+            else
+                outVel.y = math.minmax(pushVel.y, outVel.y)
+                outVel.x = math.minmax(pushVel.x, outVel.x)
+            end
+
         end
 
     end

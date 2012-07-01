@@ -1,5 +1,5 @@
 game = {
-    scale = 2,
+    scale = 3,
     images = {},
     sounds = {}
 }
@@ -11,6 +11,15 @@ function game.drawBox(x, y, w, h)
                                     h - 1 / game.scale)
 end
 
+
+function game.drawLine(x, y, x2, y2, width)
+    width = width or 1
+    love.graphics.setLineWidth(width / game.scale)
+    love.graphics.line(math.round(x), math.round(y),
+                        math.round(x2), math.round(y2))
+
+    love.graphics.setLineWidth(1 / game.scale)
+end
 
 function love.conf(t)
     t.title = 'AABB'

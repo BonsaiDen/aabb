@@ -1,15 +1,19 @@
 BoxManager = class()
 
 function BoxManager:new()
-    self.dynamics = {} -- dynamic boxes, stuff that actual moves
+    self.dynamics = {}
+    self.movings = {}
     self.staticGrid = StaticBoxGrid(64)
 end
 
 function BoxManager:add(box)
 
     if box:is_a(DynamicBox) then
-        box.manager = self
         table.insert(self.dynamics, box)
+
+    elseif box:is_a(MovingBox) then
+        table.insert(self.movings, box)
+
     else
         self.staticGrid:add(box)
     end
@@ -29,14 +33,14 @@ end
 
 function BoxManager:update(dt)
 
-    table.sort(self.dynamics, function(a, b)
-        if a.pos.y > b.pos.y then
-            return true
+    --table.sort(self.dynamics, function(a, b)
+        --if a.pos.y > b.pos.y then
+            --return true
 
-        elseif b.pos.y < a.pos.y then
-            return false
-        end
-    end)
+        --elseif b.pos.y < a.pos.y then
+            --return false
+        --end
+    --end)
 
     for i=1, #self.dynamics do
         self.dynamics[i]:beforeUpdate(dt)
@@ -61,6 +65,23 @@ function BoxManager:update(dt)
 
     end
 
+    for i=1, #self.dynamics do
+
+        local box = self.dynamics[i]
+
+        -- now check all static dynamics in the same area
+        for e=1, #self.movings do
+
+            local col, vel, normal = box:sweep(self.movings[e])
+
+            if col then
+                box:onCollision(self.movings[e], vel, normal)
+            end
+
+        end
+
+    end
+
     -- collide all dynamics with each other
     -- the problematic part here is to know
     -- that the relative velocities of the boxes are in play
@@ -75,9 +96,14 @@ function BoxManager:update(dt)
         --end
 
     --end
-    -- now update all dynamic boxes 
+    
+    -- now update all dynamic and movings boxes 
     for i=1, #self.dynamics do
         self.dynamics[i]:update(dt)
+    end
+
+    for i=1, #self.movings do
+        self.movings[i]:update(dt)
     end
 
 end
@@ -115,6 +141,12 @@ function BoxManager:eachIn(min, max, callback)
             callback(statics[e])
         end
     end)
+
+    for i=1, #self.movings do
+        if self.movings[i]:within(min, max) then
+            callback(self.movings[i])
+        end
+    end
 
     for i=1, #self.dynamics do
         if self.dynamics[i]:within(min, max) then

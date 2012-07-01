@@ -13,6 +13,13 @@ function StaticBox:new(pos, size)
     self.min = { x = 0, y = 0 }
     self.max = { x = 0, y = 0 }
 
+    self.blocks = {
+        up = true,
+        right = true,
+        down = true,
+        left = true
+    }
+
     self:updateBounds()
 
 end

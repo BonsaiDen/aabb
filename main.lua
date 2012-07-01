@@ -7,6 +7,14 @@ function math.round(num)
     return math.floor(num + 0.5)
 end
 
+function math.minmax(a, b)
+    if a < 0 then
+        return math.min(a, b)
+    else
+        return math.max(a, b)
+    end
+end
+
 function math.sign(x)
    if x < 0 then
         return -1
@@ -17,9 +25,12 @@ function math.sign(x)
    end
 end
 
-
-
-game.player = Player({ x = 20, y = 0}, { x = 10, y = 9})
+game.player = Player({ x = 35, y = 120}, { x = 10, y = 9})
+game.platform = MovingBox({ x = 0, y = 90}, { x = 50, y = 4})
+game.platform.blocks.up = false
+--game.platform.blocks.right = false
+--game.platform.blocks.left = false
+game.platform.vel.y = 0.5
 
 
 -- Global Game State ----------------------------------------------------------
@@ -50,11 +61,21 @@ function love.load(arg)
 
     manager:add(StaticBox({ x = 0, y = 280 }, { x = 320, y = 4 }))
 
+    manager:add(game.platform)
     manager:add(game.player)
 
 end
 
 function love.update(dt)
+
+    if love.mouse.isDown('l') then
+        local x, y = love.mouse.getPosition()
+        game.player:setPosition({ x = x / game.scale, y = y / game.scale })
+    end
+
+    if love.keyboard.isDown('return') then
+        love.event.push('quit')
+    end
     manager:update(dt)
 end
 
