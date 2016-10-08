@@ -1,0 +1,3 @@
+## License
+
+Licensed under MIT.
